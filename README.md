@@ -97,3 +97,19 @@ Ideally also include a pip requirements.txt file using `pip freeze` for people n
 * NaN stands for Not a Number, and is Pandas way of indicating that it doesn't have a value for that particular row and column index. Whenever a DataFrame is created, if a particular column doesn't have values for a particular row index, Pandas will put a NaN value there. If we were to feed this data into a machine learning algorithm we will have to remove these NaN values first.
 * To access `dataframe[column][row]`
 
+**Matplotlib and Seaborn**
+
+- Bar charts for qualitative variables
+- Histograms for quantitative variables
+
+In short, a **tidy** dataset is a tabular dataset where:
+
+1. each variable is a column
+2. each observation is a row
+3. each type of observational unit is a table
+
+In practice, you may need to perform tidying work before exploration. You should be comfortable with reshaping your data or perform transformations to split or combine features in your data, resulting in new data columns. This work should be performed in the wrangling stage of the data analysis process.
+
+- Bar Charts
+A bar chart is used to depict the distribution of a categorical variable. In a bar chart, each level of the categorical variable is depicted with a bar, whose height indicates the frequency of data points that take on that level.
+`sns.countplot(data, x | y, color, order)`. `color_palette()` returns a list of RBG tuples.
