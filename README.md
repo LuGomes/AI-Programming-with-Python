@@ -113,3 +113,60 @@ In practice, you may need to perform tidying work before exploration. You should
 - Bar Charts
 A bar chart is used to depict the distribution of a categorical variable. In a bar chart, each level of the categorical variable is depicted with a bar, whose height indicates the frequency of data points that take on that level.
 `sns.countplot(data, x | y, color, order)`. `color_palette()` returns a list of RBG tuples.
+
+## Intro to Neural Networks
+
+The design of the Artificial Neural Network was inspired by the biological one. The neurons used in the artificial network below are essentially mathematical functions.
+
+Each network has:
+
+Input neurons- which we refer to as the input layer of neurons
+Output neurons- which we refer to as the output layer of neurons
+and
+
+Internal neurons- which we refer to as the hidden layer of neurons. Each neural network can have many hidden layers
+
+Notice that there is no connection between the number of inputs, number of hidden neurons in the hidden layer or number of outputs.
+
+Notice the "lines" connecting the different neurons?
+
+In practice, these lines symbolize a coefficient (a scalar) that is mathematically connecting one neuron to the next. These coefficients are called weights.
+
+The "lines" connect each neuron in a specific layer to all of the neurons on the following. For example, in our example, you can see how each neuron in the hidden layer is connected to a neuron in the output one.
+
+Since there are so many weights connecting one layer to the next, we mathematically organize those coefficients in a matrix, denoted as the weight matrix.
+
+Later you will learn that when we train an artificial neural network, we are actually looking for the best set of weights that will give us a desired outcome.
+
+![Neural network](./neural_network.png)
+
+When working with neural networks we have 2 primary phases: Training and Evaluation.
+During the training phase, we take the data set (also called the training set), which includes many pairs of inputs and their corresponding targets (outputs). Our goal is to find a set of weights that would best map the inputs to the desired outputs.
+
+In the evaluation phase, we use the network that was created in the training phase, apply our new inputs and expect to obtain the desired outputs.
+
+The training phase will include two steps: Feedforward and Backpropagation.
+
+We will repeat these steps as many times as we need until we decide that our system has reached the best set of weights, giving us the best possible outputs.
+
+As you saw in the video above, vector $\vec{h'}$ of the hidden layer will be calculated by multiplying the input vector with the weight matrix $W^{1}$ the following way:
+
+${\vec{h'}=(\vec{x}W^1)}$
+
+After finding $\vec{h'}$ we need an **activation function** $\Phi$.
+
+This activation function finalizes the computation of the hidden layer's values.
+
+We can use the following two equations to express the final hidden vector $\vec{h'}$:
+
+$\vec{h} = \Phi(\vec{x} W^1 )$
+
+Since $W_{ij}$ represents the weight component in the weight matrix, connecting neuron i from the input to neuron j in the hidden layer, we can also write these calculations using a *linear combination*: (notice that in this example we have n inputs and only 3 hidden neurons):
+
+$h_1=\Phi(x_1W_{11}+x_2W_{21}+...+x_3W_{n1})$
+$h_2=\Phi(x_1W_{12}+x_2W_{22}+...+x_3W_{n2})$
+$h_3=\Phi(x_1W_{13}+x_2W_{23}+...+x_3W_{n3})$
+
+We finished our first step, finding $\vec{h}$ and now need to find the output $\vec{y}$. The process of calculating the output vector is mathematically similar to that of calculating the vector of the hidden layer. We use, again, a vector by matrix multiplication. The vector is the newly calculated hidden layer and the matrix is the one connecting the hidden layer to the output.
+​
+Essentially, each new layer in an neural network is calculated by a vector by matrix multiplication, where the vector represents the inputs to the new layer and the matrix is the one connecting these new inputs to the next layer.
