@@ -114,6 +114,20 @@ In practice, you may need to perform tidying work before exploration. You should
 A bar chart is used to depict the distribution of a categorical variable. In a bar chart, each level of the categorical variable is depicted with a bar, whose height indicates the frequency of data points that take on that level.
 `sns.countplot(data, x | y, color, order)`. `color_palette()` returns a list of RBG tuples.
 
+- Pie charts
+- Interest in relative frequencies. Areas should represent parts of a whole.
+- Limit the number of slices plotted.
+- Donut plot by setting the wedge width to number smaller than 1.
+
+- Histograms
+- Used to plot the distribution of a numeric variable. It's the quantitative version of the bar chart. However, rather than plot one bar for each unique numeric value, values are grouped into continuous bins, and one bar for each bin is plotted depicting the number.
+- Use `plt.hist(data=df,x='num_var')` or `sb.distplot()`. The latter creates more bins by default and draws the kernel density estimate (KDE) (area under the curve sum to 1). `kde=False` removes it and equals the Matplotlib one. You can set custom bin edge values with arange.
+
+```
+bin_edges = np.arange(0, df['num_var'].max()+1, 1)
+plt.hist(data = df, x = 'num_var', bins = bin_edges)
+```
+
 ## Intro to Neural Networks
 
 The design of the Artificial Neural Network was inspired by the biological one. The neurons used in the artificial network below are essentially mathematical functions.
