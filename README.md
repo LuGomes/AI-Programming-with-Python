@@ -128,6 +128,72 @@ bin_edges = np.arange(0, df['num_var'].max()+1, 1)
 plt.hist(data = df, x = 'num_var', bins = bin_edges)
 ```
 
+Figures, Axes and Subplots
+
+```
+plt.figure(figsize = [10, 5]) # larger figure size for subplots
+plt.subplot(1, 2, 1) # 1 row, 2 cols, subplot 1
+bin_edges = np.arange(0, df['num_var'].max()+4, 4)
+plt.hist(data = df, x = 'num_var', bins = bin_edges)
+
+plt.subplot(1, 2, 2) # 1 row, 2 cols, subplot 2
+bin_edges = np.arange(0, df['num_var'].max()+1/4, 1/4)
+plt.hist(data = df, x = 'num_var', bins = bin_edges)
+```
+`axes = fig.get_axes()` to get all axes in a figure and `ax=plt.gca()` to get the current axes.
+```
+fig, axes = plt.subplots(3, 4) # grid of 3x4 subplots
+axes = axes.flatten() # reshape from 3x4 array into 12-element vector
+for i in range(12):
+    plt.sca(axes[i]) # set the current Axes
+    plt.text(0.5, 0.5, i+1) # print conventional subplot index number to middle of Axes
+```
+As you create your plots and perform your exploration, make sure that you pay attention to what the plots tell you that go beyond just the basic descriptive statistics. Note any aspects of the data like number of modes and skew, and note the presence of outliers in the data for further investigation.
+
+`plt.xlim(lower,upper)` to change axes limits.
+
+```
+plt.figure(figsize = [10, 5])
+
+# histogram on left: full data
+plt.subplot(1, 2, 1)
+bin_edges = np.arange(0, df['skew_var'].max()+2.5, 2.5)
+plt.hist(data = df, x = 'skew_var', bins = bin_edges)
+
+# histogram on right: focus in on bulk of data < 35
+plt.subplot(1, 2, 2)
+bin_edges = np.arange(0, 35+1, 1)
+plt.hist(data = df, x = 'skew_var', bins = bin_edges)
+plt.xlim(0, 35) # could also be called as plt.xlim((0, 35))
+```
+
+Certain data distributions will find themselves amenable to scale transformations. The most common example of this is data that follows an approximately log-normal distribution. This is data that, in their natural units, can look highly skewed: lots of points with low values, with a very long tail of data points with large values. However, after applying a logarithmic transform to the data, the data will follow a normal distribution.
+
+```
+plt.figure(figsize = [10, 5])
+
+# left histogram: data plotted in natural units
+plt.subplot(1, 2, 1)
+bin_edges = np.arange(0, data.max()+100, 100)
+plt.hist(data, bins = bin_edges)
+plt.xlabel('values')
+
+# right histogram: data plotted after direct log transformation
+plt.subplot(1, 2, 2)
+log_data = np.log10(data) # direct data transform
+log_bin_edges = np.arange(0.8, log_data.max()+0.1, 0.1)
+plt.hist(log_data, bins = log_bin_edges)
+plt.xlabel('log(values)')
+```
+Or better yet, do the scale transform to keep the natural labels of the x-axis:
+```
+bin_edges = 10 ** np.arange(0.8, np.log10(data.max())+0.1, 0.1)
+plt.hist(data, bins = bin_edges)
+plt.xscale('log')
+tick_locs = [10, 30, 100, 300, 1000, 3000]
+plt.xticks(tick_locs, tick_locs)
+```
+
 ## Intro to Neural Networks
 
 The design of the Artificial Neural Network was inspired by the biological one. The neurons used in the artificial network below are essentially mathematical functions.
