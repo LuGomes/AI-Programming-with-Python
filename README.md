@@ -193,7 +193,73 @@ plt.xscale('log')
 tick_locs = [10, 30, 100, 300, 1000, 3000]
 plt.xticks(tick_locs, tick_locs)
 ```
+**Bivariate Exploration**
 
+If we want to inspect the relationship between two numeric (quantitative) variables, the standard choice of plot is the scatterplot!
+
+Pearson correlation coefficient - r (-1 to 1) to capture linear relationships
+`plt.scatter(data,x,y)` or `sb.regplotdata,x,y)`.
+Seaborn's regplot function combines scatterplot creation with regression function fitting.
+By default, the regression function is linear, and includes a shaded confidence region for the regression estimate.
+
+```
+def log_trans(x, inverse = False):
+    if not inverse:
+        return np.log10(x)
+    else:
+        return np.power(10, x)
+
+sb.regplot(df['num_var1'], df['num_var2'].apply(log_trans))
+tick_locs = [10, 20, 50, 100, 200, 500]
+plt.yticks(log_trans(tick_locs), tick_locs)
+```
+Overplotting solutions: sampling, transparency and jitter (random noise to position of each point).
+Transparency can be added to a scatter call by adding the "alpha" parameter set to a value between 0 (fully transparent, not visible) and 1 (fully opaque). As an alternative or companion to transparency, we can also add jitter to move the position of each point slightly from its true value. This is not a direct option in matplotlib's scatter function, but is a built-in option with seaborn's regplot function. x- and y- jitter can be added independently, and won't affect the fit of any regression function.
+
+```
+sb.regplot(data = df, x = 'disc_var1', y = 'disc_var2', fit_reg = False,
+           x_jitter = 0.2, y_jitter = 0.2, scatter_kws = {'alpha' : 1/3})
+```
+
+A heat map is a 2-d version of the histogram that can be used as an alternative to a scatterplot. Like a scatterplot, the values of the two numeric variables to be plotted are placed on the plot axes. Similar to a histogram, the plotting area is divided into a grid and the number of points in each grid rectangle is added up. Since there won't be room for bar heights, counts are indicated instead by grid cell color.
+
+```
+plt.figure(figsize = [12, 5])
+
+# left plot: scatterplot of discrete data with jitter and transparency
+plt.subplot(1, 2, 1)
+sb.regplot(data = df, x = 'disc_var1', y = 'disc_var2', fit_reg = False,
+           x_jitter = 0.2, y_jitter = 0.2, scatter_kws = {'alpha' : 1/3})
+
+# right plot: heat map with bin edges between values
+plt.subplot(1, 2, 2)
+bins_x = np.arange(0.5, 10.5+1, 1)
+bins_y = np.arange(-0.5, 10.5+1, 1)
+plt.hist2d(data = df, x = 'disc_var1', y = 'disc_var2',
+           bins = [bins_x, bins_y])
+plt.colorbar();
+```
+Furthermore, I would like to distinguish cells with zero counts from those with non-zero counts. The "cmin" parameter specifies the minimum value in a cell before it will be plotted.
+
+```
+# hist2d returns a number of different variables, including an array of counts
+bins_x = np.arange(0.5, 10.5+1, 1)
+bins_y = np.arange(-0.5, 10.5+1, 1)
+h2d = plt.hist2d(data = df, x = 'disc_var1', y = 'disc_var2',
+               bins = [bins_x, bins_y], cmap = 'viridis_r', cmin = 0.5)
+counts = h2d[0]
+
+# loop through the cell counts and add text annotations for each
+for i in range(counts.shape[0]):
+    for j in range(counts.shape[1]):
+        c = counts[i,j]
+        if c >= 7: # increase visibility on darkest cells
+            plt.text(bins_x[i]+0.5, bins_y[j]+0.5, int(c),
+                     ha = 'center', va = 'center', color = 'white')
+        elif c > 0:
+            plt.text(bins_x[i]+0.5, bins_y[j]+0.5, int(c),
+                     ha = 'center', va = 'center', color = 'black')
+```
 ## Intro to Neural Networks
 
 The design of the Artificial Neural Network was inspired by the biological one. The neurons used in the artificial network below are essentially mathematical functions.
