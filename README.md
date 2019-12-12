@@ -260,6 +260,40 @@ for i in range(counts.shape[0]):
             plt.text(bins_x[i]+0.5, bins_y[j]+0.5, int(c),
                      ha = 'center', va = 'center', color = 'black')
 ```
+
+There are a few ways of plotting the relationship between one quantitative and one qualitative variable, that demonstrate the data at different levels of abstraction. The violin plot is on the lower level of abstraction. For each level of the categorical variable, a distribution of the values on the numeric variable is plotted. The distribution is plotted as a kernel density estimate, something like a smoothed histogram.
+`sb.violinplot(data = df, x = 'cat_var', y = 'num_var')`
+
+A box plot is another way of showing the relationship between a numeric variable and a categorical variable. Compared to the violin plot, the box plot leans more on summarization of the data, primarily just reporting a set of descriptive statistics for the numeric values on each categorical level.
+
+```
+plt.figure(figsize = [10, 5])
+base_color = sb.color_palette()[0]
+
+# left plot: violin plot
+plt.subplot(1, 2, 1)
+ax1 = sb.violinplot(data = df, x = 'cat_var', y = 'num_var', color = base_color)
+
+# right plot: box plot
+plt.subplot(1, 2, 2)
+sb.boxplot(data = df, x = 'cat_var', y = 'num_var', color = base_color)
+plt.ylim(ax1.get_ylim()) # set y-axis limits to be same as left plot
+```
+The inner boxes and lines in the violin plot match up with the boxes and whiskers in the box plot. In a box plot, the central line in the box indicates the median of the distribution, while the top and bottom of the box represent the third and first quartiles of the data, respectively. Thus, the height of the box is the interquartile range (IQR). From the top and bottom of the box, the whiskers indicate the range from the first or third quartiles to the minimum or maximum value in the distribution. Typically, a maximum range is set on whisker length; by default this is 1.5 times the IQR. For the Gamma level, there are points below the lower whisker that indicate individual outlier points that are more than 1.5 times the IQR below the first quartile.
+
+To depict the relationship between two categorical variables, we can extend the univariate bar chart seen in the previous lesson into a clustered bar chart. Like a standard bar chart, we still want to depict the count of data points in each group, but each group is now a combination of labels on two variables. So we want to organize the bars into an order that makes the plot easy to interpret. In a clustered bar chart, bars are organized into clusters based on levels of the first variable, and then bars are ordered consistently across the second variable within each cluster. This is easiest to see with an example, using seaborn's countplot function. To take the plot from univariate to bivariate, we add the second variable to be plotted under the "hue" argument:
+
+`sb.countplot(data = df, x = 'cat_var1', hue = 'cat_var2')`
+
+One alternative way of depicting the relationship between two categorical variables is through a heat map. Heat maps were introduced earlier as the 2-d version of a histogram; here, we're using them as the 2-d version of a bar chart. The seaborn function heatmap is at home with this type of heat map implementation, but the input arguments are unlike most of the visualization functions that have been introduced in this course. Instead of providing the original dataframe, we need to summarize the counts into a matrix that will then be plotted.
+
+```
+ct_counts = df.groupby(['cat_var1', 'cat_var2']).size()
+ct_counts = ct_counts.reset_index('count')
+ct_counts = ct_counts.pivot(index = 'cat_var2', columns = 'cat_var1', values = 'count')
+sb.heatmap(ct_counts, annot = True, fmt = 'd')
+```
+
 ## Intro to Neural Networks
 
 The design of the Artificial Neural Network was inspired by the biological one. The neurons used in the artificial network below are essentially mathematical functions.
