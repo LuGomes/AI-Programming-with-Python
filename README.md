@@ -380,7 +380,7 @@ Our error function will tell us the direction to go to. We take at each step the
 
 So our predictions now need to be continuous as opposed to 0 or 1 only. Now we our model will need to output the likelihood that a point is classified in as a 1. No more "yes" or "no" but "X% likely". The closer to the line the point is, the greater the likelihood. We go from the step function to the **sigmoid** function that ranges from 0 to 1 continuously. The shape of the **activation function** is now given by: $\sigma(x)=1/(1+e^{-x})$ as opposed to a step function as before.
 
-![Continuous prediction with sigmoid function](./neural_networks/sigmoid.png)
+![Continuous prediction with sigmoid function](./neural_networks/images/sigmoid.png)
 
 The **softmax function** is used as an activation when there is more than two classes in the classification problem. It has to calculate probabilities that sum to 1. It also has to work with scores that are negative. We use exponential to convert every possible number into a positive number. The softmax formula is: $P(class \ i) = e^{z_i}/(e^{z_1}+e^{z_2}+...+e^{z_n})$. The value of the softmax function for a given input is exactly the same as the sigmoid for that input.
 
@@ -441,11 +441,11 @@ In the gradient descent even correctly classified points have the line move with
 
 Let's say we want to combine two linear models to produce a non-linear one. For instance we can sum the outputs of two linear models and apply the sigmoid function to produce a number between 0 and 1. We can use weights to use different proportions of the two models too and have a bias as well.
 
-![Neural net arrangement](./neural_networks/neural_network_arrangement.png)
+![Neural net arrangement](./neural_networks/images/neural_network_arrangement.png)
 
 In deep neural networks we have more hidden layers where intermediate non-linear models combine to generate other non-linear models.
 
-![Deep neural net arrangement](./neural_networks/deep_neural_network_arrangement.png)
+![Deep neural net arrangement](./neural_networks/images/deep_neural_network_arrangement.png)
 
 And for multi-class classification, as opposed to binary, we can have multiple neural networks, each one to predict the probability of one of the classes and then apply the softmax function. This seems like overkill though. What we actually do is add more nodes to the output layer and each will be the probability of the input belonging to one of the possible classes. We apply the softmax to the different scores.
 
@@ -453,7 +453,7 @@ And for multi-class classification, as opposed to binary, we can have multiple n
 
 Process of a neural network to obtain the prediction from the input vector given its architecture.
 
-![Feedforward process](./neural_networks/feedforward.png)
+![Feedforward process](./neural_networks/images/feedforward.png)
 
 Now, we're ready to get our hands into training a neural network. For this, we'll use the method known as backpropagation. In a nutshell, **backpropagation** will consist of:
 
@@ -466,9 +466,9 @@ Now, we're ready to get our hands into training a neural network. For this, we'l
 
 With backpropagation, we "listen" to the point that was misclassified and weigh in the models differently based on the classification they output with respect to that point.
 
-![Backpropagation](./neural_networks/backpropagation.png)
+![Backpropagation](./neural_networks/images/backpropagation.png)
 
-![Backpropagation](./neural_networks/backpropagation_math.png)
+![Backpropagation](./neural_networks/images/backpropagation_math.png)
 
 **Gradient Descent with Squared Errors**
 
@@ -553,7 +553,7 @@ del_w = [ learnrate * error_term * x[0],
 
 Now, the weights need to be stored in a matrix. Each row in the matrix will correspond to the weights leading out of a single input unit, and each column will correspond to the weights leading in to a single hidden unit. For our three input units and two hidden units, the weights matrix looks like this.
 
-![hidden layer](./neural_networks/hidden_layer.png)
+![hidden layer](./neural_networks/images/hidden_layer.png)
 
 To initialize these weights in NumPy, we have to provide the shape of the matrix. If features is a 2D array containing the input data:
 
@@ -571,7 +571,7 @@ $$h_j=\sum_i w_{ij}xi$$
 In NumPy, you can do this for all the inputs and all the outputs at once using np.dot:
 `hidden_inputs = np.dot(inputs, weights_input_to_hidden)`
 
-![hidden layer](./neural_networks/hidden_layer_2.png)
+![hidden layer](./neural_networks/images/hidden_layer_2.png)
 
 *Making a column vector*
 
@@ -619,14 +619,14 @@ where $w_{ij}$ are the weights between the inputs and hidden layer and $x_i$ are
 
 $$\Delta w_{pq}=\eta \delta_{output}V_{in}$$
 
-![](./neural_networks/backpropagation_hidden_layers.png)
+![](./neural_networks/images/backpropagation_hidden_layers.png)
 
 Here, you get the output error, $\delta_{output}$, by propagating the errors backwards from higher layers. And the input values, $V_{in}$ are the inputs to the layer, the hidden layer activations to the output unit for example.
 
 *Working through an example*
 Let's walk through the steps of calculating the weight updates for a simple two layer network. Suppose there are two input values, one hidden unit, and one output unit, with sigmoid activations on the hidden and output units. The following image depicts this network. (Note: the input values are shown as nodes at the bottom of the image, while the network's output value is shown as $\hat y$ at the top. The inputs themselves do not count as a layer, which is why this is considered a two layer network.)
 
-![](./neural_networks/backpropagation_example.png)
+![](./neural_networks/images/backpropagation_example.png)
 
 Assume we're trying to fit some binary data and the target is y = 1. We'll start with the forward pass, first calculating the input to the hidden unit
 
@@ -834,3 +834,58 @@ predictions = out > 0.5
 accuracy = np.mean(predictions == targets_test)
 print("Prediction accuracy: {:.3f}".format(accuracy))
 ```
+**Training Neural Networks**
+
+*Underfitting and Overfitting*
+Killing godzilla with a flyswatter. Or killing a fly with a bazzoka. Oversimplifying and overcomplicating!
+
+![](./neural_networks/images/underfitting.png)
+![](./neural_networks/images/overfitting.png)
+![](./neural_networks/images/architectures.png)
+
+We will tend to overfit as opposed to underfit and apply techniques to fix the overfitting errors. So we prefer to choose an overly complicated architecture and fix it.
+
+![](./neural_networks/images/epochs_overfitting.png)
+![](./neural_networks/images/early_stopping.png)
+![](./neural_networks/images/example_activation_overfitting.png)
+![](./neural_networks/images/activation_function_overfitting.png)
+`The whole problem with Artificial Intelligence if that bad models are so certain of themselves, and good models are so full of doubts. [Bertraind Russell]`
+Large cofficients --> Overfitting
+How to prevent this from happening? We have to tweak the error function to punish large cofficients. This is called **regularization**. Two ways of regularization:
+
+
+$$-\frac{1}{m}\sum_{i=1}^{m}(1-y_i)ln(\hat y_i)+y_iln(\hat y_i)+\lambda(|w_1|+...+|w_n|)$$
+
+
+$$-\frac{1}{m}\sum_{i=1}^{m}(1-y_i)ln(\hat y_i)+y_iln(\hat y_i)+\lambda(w_1^2+...+w_n^2)$$
+
+We choose $\lambda$ to penalize more or less.
+
+The regularization L1 leads to higher sparsity in weights vectors and it's good for feature selection.
+The regularization L2 leads to smaller sparsity and it's normally better for training models.
+
+**Dropout** is the idea of for some epochs turn off some part of the network that is dominating the training process (larger weights) so that the other parts can pick up the slack. We actually randomly turn off some of the nodes. We give the algorithm a parameter for each node to be turned off. On average each node will have the same importance at the end!
+
+**Random restart** to solve local minima. We start from a few random places and do gradient descent from all of them, increasing the chances of at the end arriving at the global minima or at least a pretty good local minima.
+
+**Vanishing gradient**: with sigmoid activation, which is pretty flat on the sides, the gradient can result in tiny values for the change in the weights. So we change the activation function to, for instance, the hyperbolic tangent function or the rectified linear unit (ReLU):
+
+$$tanhh(x)=\frac{e^x-e{-x}}{e^x+e^{-x}}$$
+
+$$relu(x)=x \ if \ x \ge 0 \ and \ 0 \ if \ x<0$$
+
+Here is the final neural network. Note that the final activation function is still a sigmoid returning an output between 0 and 1.
+
+![](./neural_networks/images/relu_activation.png)
+
+**Stochastic gradient descent** is the idea of not using all data points to compute one step (epoch) but instead choose a small random subset of the data to compute the error gradient and hence update the weights. This will make the algo faster. But we still want to use all the data, and then we split the data into a number of *batches* to make "several bad steps" as opposed to "one good step".
+
+**Learning rate**: if too big, huge steps, may miss the minimum and make the model chaotic. If small, higher chances of arriving at the minima but the algorithm can be quite slow. A good one is one that decreases as the model gets closer to a solution.
+
+![](neural_networks/images/learning_rate_tunning.png)
+
+To get over the "hump" (local minima) where the gradient is zero, we can take some weighted average of a few last few steps. We use the **momentum** constant $\beta$ to weigh in each step, to assure that more recent steps matter more. Once we get to the global minima, it pushes us away but not enough to go away from that point. Algos that use momentum tend to perform really well.
+
+![](neural_networks/images/momentum.png)
+
+There are other error functions around the world!
