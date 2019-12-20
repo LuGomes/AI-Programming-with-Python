@@ -296,12 +296,70 @@ sb.heatmap(ct_counts, annot = True, fmt = 'd')
 
 **Faceting**
 In faceting, the data is divided into disjoint subsets, most often by different levels of a categorical variable. For each of these subsets of the data, the same plot type is rendered on other variables. Faceting is a way of comparing distributions or relationships across levels of additional variables, especially when there are three or more variables of interest overall. While faceting is most useful in multivariate visualization, it is still valuable to introduce the technique here in our discussion of bivariate plots.
+
 Seaborn's FacetGrid class facilitates the creation of faceted plots. There are two steps involved in creating a faceted plot. First, we need to create an instance of the FacetGrid object and specify the feature we want to facet by ("cat_var" in our example). Then we use the map method on the FacetGrid object to specify the plot type and variable(s) that will be plotted in each subset (in this case, histogram on "num_var").
+
+In the `map` call, just set the plotting function and variable to be plotted as positional arguments. Don't set them as keyword arguments, like x = "num_var", or the mapping won't work properly.
 
 ```
 g = sb.FacetGrid(data = df, col = 'cat_var')
 g.map(plt.hist, "num_var")
 ```
+
+```
+group_means = df.groupby(['many_cat_var']).mean()
+group_order = group_means.sort_values(['num_var'], ascending = False).index
+
+g = sb.FacetGrid(data = df, col = 'many_cat_var', col_wrap = 5, size = 2,
+                 col_order = group_order)
+g.map(plt.hist, 'num_var', bins = np.arange(5, 15+1, 1))
+g.set_titles('{col_name}')
+```
+
+Other operations may be performed to increase the immediate readability of the plots: setting each facet height to 2 inches ("size"), sorting the facets by group mean ("col_order"), limiting the number of bin edges, and changing the titles of each facet to just the categorical level name using the set_titles method and {col_name} template variable.
+
+Adapted Bar Charts
+Histograms and bar charts were introduced in the previous lesson as depicting the distribution of numeric and categorical variables, respectively, with the height (or length) of bars indicating the number of data points that fell within each bar's range of values. These plots can be adapted for use as bivariate plots by, instead of indicating count by height, indicating a mean or other statistic on a second variable.
+
+For example, we could plot a numeric variable against a categorical variable by adapting a bar chart so that its bar heights indicate the mean of the numeric variable. This is the purpose of seaborn's barplot function:
+
+```
+base_color = sb.color_palette()[0]
+sb.barplot(data = df, x = 'cat_var', y = 'num_var', color = base_color)
+```
+
+As an alternative, the pointplot function can be used to plot the averages as points rather than bars. This can be useful if having bars in reference to a 0 baseline aren't important or would be confusing.
+
+```
+sb.pointplot(data = df, x = 'cat_var', y = 'num_var', linestyles = "")
+plt.ylabel('Avg. value of num_var')
+```
+
+The above plots can be useful alternatives to the box plot and violin plot if the data is not conducive to either of those plot types. For example, if the numeric variable is binary in nature, taking values only of 0 or 1, then a box plot or violin plot will not be informative, leaving the adapted bar chart as the best choice for displaying the data.
+
+Alternate Variations
+Instead of computing summary statistics on fixed bins, you can also make computations on a rolling window through use of pandas' rolling method. Since the rolling window will make computations on sequential rows of the dataframe, we should use sort_values to put the x-values in ascending order first.
+
+```
+# compute statistics in a rolling window
+df_window = df.sort_values('num_var1').rolling(15)
+x_winmean = df_window.mean()['num_var1']
+y_median = df_window.median()['num_var2']
+y_q1 = df_window.quantile(.25)['num_var2']
+y_q3 = df_window.quantile(.75)['num_var2']
+
+# plot the summarized data
+base_color = sb.color_palette()[0]
+line_color = sb.color_palette('dark')[0]
+plt.scatter(data = df, x = 'num_var1', y = 'num_var2')
+plt.errorbar(x = x_winmean, y = y_median, c = line_color)
+plt.errorbar(x = x_winmean, y = y_q1, c = line_color, linestyle = '--')
+plt.errorbar(x = x_winmean, y = y_q3, c = line_color, linestyle = '--')
+
+plt.xlabel('num_var1')
+plt.ylabel('num_var2')
+```
+Note that we're also not limited to just one line when plotting. When multiple Matplotlib functions are called one after the other, all of them will be plotted on the same axes. Instead of plotting the mean and error bars, we will plot the three central quartiles, laid on top of the scatterplot
 
 ## Intro to Neural Networks
 
@@ -901,3 +959,516 @@ Then you'll learn about a module called autograd that PyTorch uses to calculate 
 Next you'll use PyTorch to build a network and run data forward through it. After that, you'll define a loss and an optimization method to train the neural network on a dataset of handwritten digits. You'll also learn how to test that your network is able to generalize through validation.
 
 However, you'll find that your network doesn't work too well with more complex images. You'll learn how to use pre-trained networks to improve the performance of your classifier, a technique known as transfer learning.
+
+
+###Git and Github
+
+Remember that the main point of a version control system is to help you maintain a detailed history of the project as well as the ability to work on different versions of it. Having a detailed history of a project is important because it lets you see the progress of the project over time. If needed, you can also jump back to any point in the project to recover data or files.
+
+Version Control System - Git, Subversion and Mercurial
+- the centralized model - all users connect to a central, master repository
+- the distributed model - each user has the entire repository on their computer
+Git is of distributed type -> version control tool or source code manager!
+Github -> service that hosts Git projects
+
+Some Terminology:
+- Commit
+Git thinks of its data like a set of snapshots of a mini filesystem. Every time you commit (save the state of your project in Git), it basically takes a picture of what all your files look like at that moment and stores a reference to that snapshot. You can think of it as a save point in a game - it saves your project's files and any information about them.
+
+Everything you do in Git is to help you make commits, so a commit is the fundamental unit in Git.
+
+- Repository / repo
+A repository is a directory which contains your project work, as well as a few files (hidden by default on Mac OS X) which are used to communicate with Git. Repositories can exist either locally on your computer or as a remote copy on another computer. A repository is made up of commits.
+
+- Working Directory
+The Working Directory is the files that you see in your computer's file system. When you open your project files up on a code editor, you're working with files in the Working Directory.
+
+This is in contrast to the files that have been saved (in commits!) in the repository.
+
+When working with Git, the Working Directory is also different from the command line's concept of the current working directory which is the directory that your shell is "looking at" right now.
+
+- Checkout
+A checkout is when content in the repository has been copied to the Working Directory.
+
+- Staging Area / Staging Index / Index
+A file in the Git directory that stores information about what will go into your next commit. You can think of the staging area as a prep table where Git will take the next commit. Files on the Staging Index are poised to be added to the repository.
+
+- SHA
+A SHA is basically an ID number for each commit. Here's what a commit's SHA might look like: `e2adf8ae3e2e4ed40add75cc44cf9d0a869afeb6`.
+
+It is a 40-character string composed of characters (0–9 and a–f) and calculated based on the contents of a file or directory structure in Git. "SHA" is shorthand for "Secure Hash Algorithm".
+
+Running the `git init` command sets up all of the necessary files and directories that Git will use to keep track of everything. All of these files are stored in a directory called `.git` (notice the . at the beginning - that means it'll be a hidden directory on Mac/Linux). This .git directory is the "repo"! This is where git records all of the commits and keeps track of everything!
+
+Here's a brief synopsis on each of the items in the `.git` directory:
+
+config file - where all project specific configuration settings are stored.
+From the Git Book:
+
+Git looks for configuration values in the configuration file in the Git directory (.git/config) of whatever repository you’re currently using. These values are specific to that single repository.
+
+For example, let's say you set that the global configuration for Git uses your personal email address. If you want your work email to be used for a specific project rather than your personal email, that change would be added to this file.
+
+description file - this file is only used by the GitWeb program, so we can ignore it
+
+hooks directory - this is where we could place client-side or server-side scripts that we can use to hook into Git's different lifecycle events
+
+info directory - contains the global excludes file
+
+objects directory - this directory will store all of the commits we make
+
+refs directory - this directory holds pointers to commits (basically the "branches" and "tags")
+
+Remember, other than the "hooks" directory, you shouldn't mess with pretty much any of the content in here. The "hooks" directory can be used to hook into different parts or events of Git's workflow, but that's a more advanced topic that we won't be getting into in this course.
+
+The git clone command is used to create an identical copy of an existing repository.
+
+`git clone <path-to-repository-to-clone>`
+
+This command:
+
+takes the path to an existing repository
+by default will create a directory with the same name as the repository that's being cloned
+can be given a second argument that will be used as the name of the directory
+will create the new repository inside of the current working directory
+
+The `git status` is our key to the mind of Git. It will tell us what Git is thinking and the state of our repository as Git sees it. When you're first starting out, you should be using the git status command all of the time! Seriously. You should get into the habit of running it after any other command. This will help you learn how Git works and it'll help you from making (possibly) incorrect assumptions about the state of your files/repository.
+
+The git status command will display the current status of the repository.
+
+This command will:
+
+tell us about new files that have been created in the Working Directory that Git hasn't started tracking, yet
+files that Git is tracking that have been modified
+whole bunch of other info...
+
+Let's do a quick recap of the git log command. The git log command is used to display all of the commits of a repository.
+
+`git log`
+By default, this command displays:
+
+the SHA
+the author
+the date
+and the message
+
+What could we do here to not waste a lot of space and make the output smaller? We can use a flag.
+`git log --oneline` -> 7 initial chars of the SHA and message only displayed
+
+The git log command has a flag that can be used to display the files that have been changed in the commit, as well as the number of lines that have been added or deleted. The flag is --stat ("stat" is short for "statistics"):
+
+`git log --stat`
+
+This command:
+
+displays the file(s) that have been modified
+displays the number of lines that have been added/removed
+displays a summary line with the total number of modified files and lines that have been added/removed
+
+The git log command has a flag that can be used to display the actual changes made to a file. The flag is --patch which can be shortened to just -p:
+
+`git log -p`
+
+🔵 - the file that is being displayed
+🔶 - the hash of the first version of the file and the hash of the second version of the file - not usually important, so it's safe to ignore
+❤️ - the old version and current version of the file
+🔍 - the lines where the file is added and how many lines there are
+✏️ - the actual changes made in the commit
+lines that are red and start with a minus (-) were in the original version of the file but have been removed by the commit
+lines that are green and start with a plus (+) are new lines that have been added in the commit
+
+`git log -p -w` will ignore changes in whitespaces like indentation changes.
+
+`git log -p fdf5493`
+By supplying a SHA, the git log -p command will start at that commit! No need to scroll through everything! Keep in mind that it will also show all of the commits that were made prior to the supplied SHA.
+
+The `git show` command will show only one commit. So don't get alarmed when you can't find any other commits - it only shows one. The output of the git show command is exactly the same as the git log -p command. So by default, git show displays:
+
+the commit
+the author
+the date
+the commit message
+the patch information
+
+The git add command is used to move files from the Working Directory to the Staging Index.
+
+`git add <file1> <file2> … <fileN>`
+This command:
+
+takes a space-separated list of file names
+alternatively, the period . can be used in place of a list of files to tell Git to add the current directory (and all nested files)
+
+`git config --global core.editor <your-editor's-config-went-here>` - commit to open specific code editor to include message
+
+Terminal Hangs
+If you switch back to the Terminal for a quick second, you'll see that the Terminal is chillin' out just waiting for you to finish with the code editor that popped up. You don't need to worry about this, though. Once we add the necessary content to the code editor and finally close the code editor window, the Terminal will unfreeze and return to normal.
+
+TIP: If the commit message you're writing is short and you don't want to wait for your code editor to open up to type it out, you can pass your message directly on the command line with the -m flag:
+`git commit -m "Initial commit"`
+
+The goal is that each commit has a single focus. Each commit should record a single-unit change. Now this can be a bit subjective (which is totally fine), but each commit should make a change to just one aspect of the project.
+
+Now this isn't limiting the number of lines of code that are added/removed or the number of files that are added/removed/modified. Let's say you want to change your sidebar to add a new image. You'll probably:
+
+add a new image to the project files
+alter the HTML
+add/modify CSS to incorporate the new image
+A commit that records all of these changes would be totally fine!
+
+The best way that I've found to think about what should be in a commit is to think, "What if all changes introduced in this commit were erased?". If a commit were erased, it should only remove one thing.
+
+The `git commit` command takes files from the Staging Index and saves them in the repository.
+
+will open the code editor that is specified in your configuration
+Inside the code editor:
+
+a commit message must be supplied
+lines that start with a # are comments and will not be recorded
+save the file after adding a commit message
+close the editor to make the commit
+
+do keep the message short (less than 60-ish characters)
+do explain what the commit does (not how or why!)
+do not explain why the changes are made (more on this below)
+do not explain how the changes are made (that's what `git log -p` is for!)
+do not use the word "and"
+if you have to use "and", your commit message is probably doing too many changes - break the changes into separate commits
+
+Explain the Why
+If you need to explain why a commit needs to be made, you can!
+
+When you're writing the commit message, the first line is the message itself. After the message, leave a blank line, and then type out the body or explanation including details about why the commit is needed (e.g. URL links).
+Only the message (the first line) is included in `git log --oneline`, though!
+
+**Udacity Git Commit Message Style Guide**
+```
+Example Commit Message
+feat: Summarize changes in around 50 characters or less
+
+More detailed explanatory text, if necessary. Wrap it to about 72
+characters or so. In some contexts, the first line is treated as the
+subject of the commit and the rest of the text as the body. The
+blank line separating the summary from the body is critical (unless
+you omit the body entirely); various tools like `log`, `shortlog`
+and `rebase` can get confused if you run the two together.
+
+Explain the problem that this commit is solving. Focus on why you
+are making this change as opposed to how (the code explains that).
+Are there side effects or other unintuitive consequenses of this
+change? Here's the place to explain them.
+
+Further paragraphs come after blank lines.
+
+ - Bullet points are okay, too
+
+ - Typically a hyphen or asterisk is used for the bullet, preceded
+   by a single space, with blank lines in between, but conventions
+   vary here
+
+If you use an issue tracker, put references to them at the bottom,
+like this:
+
+Resolves: #123
+See also: #456, #789
+```
+
+To recap, the `git diff` command is used to see changes that have been made but haven't been committed, displaying:
+
+the files that have been modified
+the location of the lines that have been added/removed
+the actual changes that have been made
+
+Git Ignore
+If you want to keep a file in your project's directory structure but make sure it isn't accidentally committed to the project, you can use the specially named file, .gitignore (note the dot at the front, it's important!). Add this file to your project in the same directory that the hidden .git directory is located. All you have to do is list the names of files that you want Git to ignore (not track) and it will ignore them.
+
+Git knows to look at the contents of a file with the name .gitignore. Since it saw "project.docx" in it, it ignored that file and doesn't show it in the output of git status.
+
+Let's say that you add 50 images to your project, but want Git to ignore all of them. Does this mean you have to list each and every filename in the .gitignore file? Oh gosh no, that would be crazy! Instead, you can use a concept called globbing.
+
+Globbing lets you use special characters to match patterns/characters. In the .gitignore file, you can use the following:
+
+blank lines can be used for spacing
+- marks line as a comment
+* - matches 0 or more characters
+? - matches 1 character
+[abc] - matches a, b, _or_ c
+** - matches nested directories - a/**/z matches
+a/z
+a/b/z
+a/b/c/z
+So if all of the 50 images are JPEG images in the "samples" folder, we could add the following line to .gitignore to have Git ignore all 50 images.
+
+samples/*.jpg
+
+To recap, the .gitignore file is used to tell Git about the files that Git should not track. This file should be placed in the same directory that the .git directory is in.
+
+The `git tag` command is used to add a marker on a specific commit. The tag does not move around as new commits are added.
+
+`git tag -a beta`
+This command will:
+
+add a tag to the most recent commit
+add a tag to a specific commit if a SHA is passed
+
+`git tag -a v1.0 a87984` (after popping open a code editor to let you supply the tag's message) this command will tag the commit with the SHA a87084 with the tag v1.0.
+
+The head pointer points to the branch that is active (git checkout to switch where it points to)
+
+To switch between branches, we need to use Git's checkout command.
+
+`git checkout new-branch`
+It's important to understand how this command works. Running this command will:
+
+remove all files and directories from the Working Directory that Git is tracking
+(files that Git tracks are stored in the repository, so nothing is lost)
+go into the repository and pull out all of the files and directories of the commit that the branch points to
+
+So this will remove all of the files that are referenced by commits in the master branch. It will replace them with the files that are referenced by the commits in the sidebar branch.
+
+To recap, the git branch command is used to manage branches in Git:
+
+to list all branches
+`git branch`
+
+to create a new "footer-fix" branch
+`git branch footer-fix SHA(optional)`
+
+to delete the "footer-fix" branch
+`git branch -d footer-fix`
+
+Deleting something can be quite nerve-wracking. Don't worry, though. Git won't let you delete a branch if it has commits on it that aren't on any other branch (meaning the commits are unique to the branch that's about to be deleted). If you created the sidebar branch, added commits to it, and then tried to delete it with the git branch -d sidebar, Git wouldn't let you delete the branch because you can't delete a branch that you're currently on. If you switched to the master branch and tried to delete the sidebar branch, Git also wouldn't let you do that because those new commits on the sidebar branch would be lost! To force deletion, you need to use a capital D flag - `git branch -D sidebar`.
+
+`git log --oneline --graph --all` to show all branchs at once.
+`git diff` to see changes that are not committed yet.
+
+As of right now, we do not know how to undo changes. If you make a merge on the wrong branch, use this command to undo the merge:
+
+`git reset --hard HEAD^`
+
+(Make sure to include the ^ character! It's a known as a "Relative Commit Reference" and indicates "the parent commit"
+
+The git merge command is used to combine Git branches:
+
+`git merge <name-of-branch-to-merge-in>`
+When a merge happens, Git will:
+
+look at the branches that it's going to merge
+look back along the branch's history to find a single commit that both branches have in their commit history
+combine the lines of code that were changed on the separate branches together
+makes a commit to record the merge
+
+Fast-forward Merge
+In our project, I've checked out the master branch and I want _it_ to have the changes that are on the footer branch. If I wanted to verbalize this, I could say this is - "I want to merge in the footer branch". That "merge in" is important; when a merge is performed, the other branch's changes are brought into the branch that's currently checked out.
+
+There are two types of merges:
+
+Fast-forward merge – the branch being merged in must be ahead of the checked out branch. The checked out branch's pointer will just be moved forward to point to the same commit as the other branch.
+the regular type of merge
+two divergent branches are combined
+a merge commit is created
+
+Merge Conflict Recap
+A merge conflict happens when the same line or lines have been changed on different branches that are being merged. Git will pause mid-merge telling you that there is a conflict and will tell you in what file or files the conflict occurred. To resolve the conflict in a file:
+
+locate and remove all lines with merge conflict indicators
+determine what to keep
+save the file(s)
+stage the file(s)
+make a commit
+
+Changing The Last Commit
+With the `--amend` flag, you can alter the most-recent commit.
+
+`git commit --amend`
+If your Working Directory is clean (meaning there aren't any uncommitted changes in the repository), then running git commit --amend will let you provide a new commit message. Your code editor will open up and display the original commit message. Just fix a misspelling or completely reword it! Then save it and close the editor to lock in the new commit message.
+
+Alternatively, git commit --amend will let you include files (or changes to files) you might've forgotten to include. Let's say you've updated the color of all navigation links across your entire website. You committed that change and thought you were done. But then you discovered that a special nav link buried deep on a page doesn't have the new color. You could just make a new commit that updates the color for that one link, but that would have two back-to-back commits that do practically the exact same thing (change link colors).
+
+The `git revert` command is used to reverse a previously made commit:
+
+`git revert <SHA-of-commit-to-revert>`
+This command:
+
+will undo the changes that were made by the provided commit
+creates a new commit to record the change
+
+Reset vs Revert
+At first glance, resetting might seem coincidentally close to reverting, but they are actually quite different. Reverting creates a new commit that reverts or undos a previous commit. Resetting, on the other hand, erases commits!
+
+⚠️ Resetting Is Dangerous ⚠️
+You've got to be careful with Git's resetting capabilities. This is one of the few commands that lets you erase commits from the repository. If a commit is no longer in the repository, then its content is gone.
+
+To alleviate the stress a bit, Git does keep track of everything for about 30 days before it completely erases anything. To access this content, you'll need to use the git reflog command.
+
+Relative Commit References
+You already know that you can reference commits by their SHA, by tags, branches, and the special HEAD pointer. Sometimes that's not enough, though. There will be times when you'll want to reference a commit relative to another commit. For example, there will be times where you'll want to tell Git about the commit that's one before the current commit...or two before the current commit. There are special characters called "Ancestry References" that we can use to tell Git about these relative references. Those characters are:
+
+^ – indicates the parent commit
+~ – indicates the first parent commit
+Here's how we can refer to previous commits:
+
+the parent commit – the following indicate the parent commit of the current commit
+HEAD^
+HEAD~
+HEAD~1
+the grandparent commit – the following indicate the grandparent commit of the current commit
+HEAD^^
+HEAD~2
+the great-grandparent commit – the following indicate the great-grandparent commit of the current commit
+HEAD^^^
+HEAD~3
+The main difference between the ^ and the ~ is when a commit is created from a merge. A merge commit has two parents. With a merge commit, the ^ reference is used to indicate the first parent of the commit while ^2 indicates the second parent. The first parent is the branch you were on when you ran git merge while the second parent is the branch that was merged in.
+
+
+The git reset command is used to reset (erase) commits:
+
+`git reset <reference-to-commit>`
+It can be used to:
+
+move the HEAD and current branch pointer to the referenced commit
+erase commits
+move committed changes to the staging index
+unstage committed changes
+
+Git Reset's Flags
+The way that Git determines if it erases, stages previously committed changes, or unstages previously committed changes is by the flag that's used. The flags are:
+example: `git reset HEAD~1`
+--mixed (default) - will move the commit to working directory - the new SHA will be different (timestamp changed)
+--soft - will move the commit to staging area - the new SHA will be different (timestamp changed)
+--hard - will erase the commit
+
+💡 Backup Branch 💡
+Remember that using the git reset command will erase commits from the current branch. So if you want to follow along with all the resetting stuff that's coming up, you'll need to create a branch on the current commit that you can use as a backup.
+
+Before I do any resetting, I usually create a backup branch on the most-recent commit so that I can get back to the commits if I make a mistake.
+
+Reset's --mixed Flag
+Let's look at each one of these flags.
+
+```
+* 9ec05ca (HEAD -> master) Revert "Set page heading to "Quests & Crusades""
+* db7e87a Set page heading to "Quests & Crusades"
+* 796ddb0 Merge branch 'heading-update'
+```
+
+Using the sample repo above with HEAD pointing to master on commit 9ec05ca, running git reset --mixed HEAD^ will take the changes made in commit 9ec05ca and move them to the working directory.
+
+💡 Back To Normal 💡
+If you created the backup branch prior to resetting anything, then you can easily get back to having the master branch point to the same commit as the backup branch. You'll just need to:
+
+remove the uncommitted changes from the working directory
+merge backup into master (which will cause a Fast-forward merge and move master up to the same point as backup)
+
+Reset's --hard Flag
+Last but not least, let's look at the --hard flag:
+
+```
+* 9ec05ca (HEAD -> master) Revert "Set page heading to "Quests & Crusades""
+* db7e87a Set page heading to "Quests & Crusades"
+* 796ddb0 Merge branch 'heading-update'
+```
+
+Running `git reset --hard HEAD^` will take the changes made in commit 9ec05ca and erases them.
+
+To recap, the git reset command is used erase commits:
+
+`git reset <reference-to-commit>`
+It can be used to:
+
+move the HEAD and current branch pointer to the referenced commit
+erase commits with the `--hard` flag
+moves committed changes to the staging index with the `--soft` flag
+unstages committed changes `--mixed` flag
+
+
+A remote repository is a repository that's just like the one you're using but it's just stored at a different location. To manage a remote repository, use the git remote command:
+
+`git remote`
+It's possible to have links to multiple different remote repositories.
+A shortname is the name that's used to refer to a remote repository's location. Typically the location is a URL, but it could be a file path on the same computer.
+`git remote add` is used to add a connection to a new remote repository.
+`git remote -v` is used to see the details about a connection to a remote.
+
+The git push command is used to send commits from a local repository to a remote repository.
+
+`git push origin master`
+The git push command takes:
+
+the shortname of the remote repository you want to send commits to
+the name of the branch that has the commits you want to send
+
+I said it before but I'll say it again, the branch that appears in the local repository is actually tracking a branch in the remote repository (e.g. origin/master in the local repository is called a tracking branch because it's tracking the progress of the master branch on the remote repository that has the shortname "origin").
+
+If you don't want to automatically merge the local branch with the tracking branch then you wouldn't use git pull you would use a different command called git fetch. You might want to do this if there are commits on the repository that you don't have but there are also commits on the local repository that the remote one doesn't have either.
+
+When git pull is run, the following things happen:
+
+the commit(s) on the remote branch are copied to the local repository
+the local tracking branch (origin/master) is moved to point to the most recent commit
+the local tracking branch (origin/master) is merged into the local branch (master)
+
+Git fetch is used to retrieve commits from a remote repository's branch but it does not automatically merge the local branch with the remote tracking branch after those commits have been received.
+
+When git fetch is run, the following things happen:
+
+the commit(s) on the remote branch are copied to the local repository
+the local tracking branch (e.g. origin/master) is moved to point to the most recent commit
+The important thing to note is that the local branch does not change at all.
+
+You can think of git fetch as half of a git pull. The other half of git pull is the merging aspect.
+
+One main point when you want to use git fetch rather than git pull is if your remote branch and your local branch both have changes that neither of the other ones has. In this case, you want to fetch the remote changes to get them in your local branch and then perform a merge manually. Then you can push that new merge commit back to the remote.
+
+In version control terminology if you "fork" a repository that means you duplicate it. Typically you fork a repository that belongs to someone else. So you make an identical copy of their repository and that duplicate copy now belongs to you.
+
+This concept of "forking" is also different from "cloning". When you clone a repository, you get an identical copy of the repository. But cloning happens on your local machine and you clone a remote repository. When you fork a repository, a new duplicate copy of the remote repository is created. This new copy is also a remote repository, but it now belongs to you.
+
+We can see from this little experiment that if a repository doesn't belong to your account then it means you do not have permission to modify it.
+
+This is where forking comes in! Instead of modifying the original repository directly, if you fork the repository to your own account then you will have full control over that repository.
+
+Forking is an action that's done on a hosting service, like GitHub. Forking a repository creates an identical copy of the original repository and moves this copy to your account. You have total control over this forked repository. Modifying your forked repository does not alter the original repository in any way.
+
+This is not a massive project, but it does have well over 1,000 commits. A quick way that we can see how many commits each contributor has added to the repository is to use the git shortlog command:
+
+`git shortlog` displays an alphabetical list of names and the commit messages that go along with them. If we just want to see just the number of commits that each developer has made, we can add a couple of flags: -s to show just the number of commits (rather than each commit's message) and -n to sort them numerically (rather than alphabetically by author name).
+
+Filter By Author
+Another way that we can display all of the commits by an author is to use the regular git log command but include the --author flag to filter the commits to the provided author.
+
+`git log --author=Surma`
+
+How about we filter down to just the commits that reference the word "bug". We can do that with either of the following commands:
+
+`git log --grep=bug`
+`git log --grep bug`
+
+A pull request is a request to the original or source repository's maintainer to include changes in their project that you made in your fork of their project. You are requesting that they pull in changes you've made.
+
+A pull request is a request for the source repository to pull in your commits and merge them with their project. To create a pull request, a couple of things need to happen:
+
+you must fork the source repository
+clone your fork down to your machine
+make some commits (ideally on a topic branch!)
+push the commits back to your fork
+create a new pull request and choose the branch that has your new commits
+
+One thing that can be a tiny bit confusing right now is the difference between the origin and upstream. What might be confusing is that origin does not refer to the source repository (also known as the "original" repository) that we forked from. Instead, it's pointing to our forked repository. So even though it has the word origin is not actually the original repository.
+
+Remember that the names origin and upstream are just the default or de facto names that are used. If it's clearer for you to name your origin remote mine and the upstream remote source-repo, then by all means, go ahead and rename them. What you name your remote repositories in your local repository does not affect the source repository at all.
+
+`git remote rename origin mine`
+`git remote rename upstream source-repo`
+
+When working with a project that you've forked. The original project's maintainer will continue adding changes to their project. You'll want to keep your fork of their project in sync with theirs so that you can include any changes they make.
+
+To get commits from a source repository into your forked repository on GitHub you need to:
+
+get the cloneable URL of the source repository
+create a new remote with the git remote add command
+use the shortname upstream to point to the source repository
+provide the URL of the source repository
+fetch the new upstream remote
+merge the upstream's branch into a local branch
+push the newly updated local branch to your origin repo
+
