@@ -6,17 +6,16 @@ from PIL import Image
 import json
 import numpy as np
 
-with open('cat_to_name.json', 'r') as f:
-    cat_to_name = json.load(f)
-
 def get_input_args():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--class_to_cat_json', default='cat_to_name.json',
+                        help='JSON file that maps categories to names')
     parser.add_argument('--image_path', default='flowers/test/100/image_07926.jpg',
                         help='Path to image to classify')
     parser.add_argument('--top_k', type=int, default=5,
                         help='Number of most likely classes to display')
-    
+
     return parser.parse_args()
 
 
@@ -86,6 +85,8 @@ def main():
     cls = np.zeros(in_arg.top_k)
     idx_to_class = {v: k for k, v in trained_model.class_to_idx.items()}
     cls = [idx_to_class[cl] for cl in classes[0].numpy()]
+    with open(in_arg.class_to_cat_json, 'r') as f:
+        cat_to_name = json.load(f)
     cats = [cat_to_name[cat] for cat in cls]
     print(probs,cats)
     return probs, cats

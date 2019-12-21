@@ -8,6 +8,8 @@ import torch
 def get_input_args():
     parser = argparse.ArgumentParser()
 
+    parser.add_argument('--arch', default='vgg16',
+                        help='Deep learning architecture')
     parser.add_argument('--learning_rate', type=float, default=0.001,
                         help='Gradient Descent Learning Rate')
     parser.add_argument('--epochs', type=int, default=3,
@@ -56,25 +58,34 @@ def main():
     trainloader, validloader, testloader, train_data = load_data()
 
     # Build and train your network
-    # model = models.in_arg.arch(pretrained=True)
-    model = models.vgg16(pretrained=True)
+    model = models.__dict__[in_arg.arch](pretrained=True)
 
     # Freeze parameters so we don't backprop through them
     for param in model.parameters():
         param.requires_grad = False
 
-    classifier = nn.Sequential(nn.Linear(25088, 256),
-                            nn.ReLU(),
-                            nn.Dropout(0.5),
-                            nn.Linear(256, 102),
-                            nn.LogSoftmax(dim=1))
+    features = list(model.classifier.children())[:-1]
 
-    model.classifier = classifier
+    # number of filters in the bottleneck layer
+    num_filters = model.classifier[len(features)].in_features
+
+    # add layers
+    num_labels = 102
+    hidden_units = 256
+    features.extend([
+        nn.Linear(num_filters, hidden_units),
+        nn.ReLU(True),
+        nn.Dropout(),
+        nn.Linear(hidden_units, num_labels),
+        nn.LogSoftmax(dim=1)
+    ])
+    model.classifier = nn.Sequential(*features)
 
     criterion = nn.NLLLoss()
 
     # Only train the classifier parameters, feature parameters are frozen
-    optimizer = optim.Adam(model.classifier.parameters(), in_arg.learning_rate)
+    optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.classifier.parameters()), in_arg.learning_rate)
+
     model.to(device)
 
 
